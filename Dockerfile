@@ -11,7 +11,7 @@ COPY requirements.txt /opt/requirements.txt
 
 # Install the Linux dependencies, configure timezone, locale, install Python libraries
 # and clean unnecessary files and packages
-RUN apt-get update && apt-get install -yq --no-install-recommends fail2ban curl locales ca-certificates python3-pip python3-setuptools \
+RUN apt-get update && apt-get install -yq --no-install-recommends iptables fail2ban curl locales ca-certificates python3-pip python3-setuptools \
    && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone \
    && dpkg-reconfigure --frontend=noninteractive tzdata \
    && sed -i -e 's/# pt_BR.UTF-8 UTF-8/pt_BR.UTF-8 UTF-8/' /etc/locale.gen \
