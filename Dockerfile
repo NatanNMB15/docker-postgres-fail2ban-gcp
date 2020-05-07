@@ -17,6 +17,8 @@ RUN apt-get update && apt-get install -yq --no-install-recommends fail2ban curl 
    && sed -i -e 's/# pt_BR.UTF-8 UTF-8/pt_BR.UTF-8 UTF-8/' /etc/locale.gen \
    && dpkg-reconfigure --frontend=noninteractive locales \
    && python3 -m pip install --upgrade pip && python3 -m pip install -r /opt/requirements.txt \
+   # Change default environment variables of Fail2Ban service file to include Docker variables
+   && sed -i 's|PATH=/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/bin|PATH=/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/bin:/proc/1/environ|' /etc/init.d/fail2ban \
    && rm -rf /opt/requirements.txt \
    && rm -rf /etc/fail2ban/jail.d/defaults-debian.conf \
    && apt-get purge -y python3-pip python3-setuptools && apt-get autoremove -y && apt-get clean -y \
