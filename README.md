@@ -4,6 +4,13 @@ Docker Build Image for postgres and fail2ban to invoke Google Cloud Function for
 
 To use this Build Image you will need the file "service-account.json" from Google Cloud Service Account with Cloud Functions Invoker permission.
 
+For use with Cloud Build you need to upload "service-account.json" file to Google Storage Bucket.
+With Google Cloud Platform SDK installed, upload "service-account.json" file to your Storage Bucket:
+
+```
+gsutil cp service-account.json gs://YOUR-PROJECT-ID.appspot.com/secrets/database/fail2ban/service-account.json
+```
+
 After Build, to run this Image you will need set following environment variables:
 
 ```
