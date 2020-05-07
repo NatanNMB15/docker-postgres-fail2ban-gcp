@@ -15,3 +15,5 @@ You can create more databases using interactive Shell to running container, with
 HOST_FUNCTION_DDOS_BLOCK    = full URL for Cloud Function to use.
 SERVICE_ACCOUNT_ID          = client ID from provided "service-account.json" file.
 ```
+
+Credits to SuperITMan for Fail2Ban Jail and Filter configuration. Original source: https://github.com/SuperITMan/docker-fail2ban
