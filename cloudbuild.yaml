@@ -1,0 +1,20 @@
+steps:
+  - name: gcr.io/cloud-builders/gsutil
+    entrypoint: bash
+    args:
+      - "-c"
+      - |
+        gsutil cp gs://$PROJECT_ID.appspot.com/secrets/database/fail2ban/service-account.json service-account.json
+    timeout: "600s"
+  - name: gcr.io/cloud-builders/docker
+    args:
+      [
+        "build",
+        "--compress",
+        "-t",
+        "gcr.io/$PROJECT_ID/postgres-fail2ban:latest",
+        ".",
+      ]
+    timeout: "600s"
+images:
+  - "gcr.io/$PROJECT_ID/postgres-fail2ban:latest"
