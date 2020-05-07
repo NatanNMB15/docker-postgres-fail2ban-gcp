@@ -23,4 +23,6 @@ HOST_FUNCTION_DDOS_BLOCK    = full URL for Cloud Function to use.
 SERVICE_ACCOUNT_ID          = client ID from provided "service-account.json" file.
 ```
 
+To make work ban from Docker containers iptables must be set network capability of NET_ADMIN to container, or container run with root account from Host OS.
+
 Credits to SuperITMan for Fail2Ban Jail and Filter configuration. Original source: https://github.com/SuperITMan/docker-fail2ban
