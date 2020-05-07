@@ -1,13 +1,16 @@
 FROM postgres:12.2
 
+# Set Debian shell as non-interactive
 ARG DEBIAN_FRONTEND=noninteractive
 
 # Timezone
 ENV TZ=America/Sao_Paulo
 
+# Copy file with required libraries for Python
 COPY requirements.txt /opt/requirements.txt
 
-# Install the Linux dependencies
+# Install the Linux dependencies, configure timezone, locale, install Python libraries
+# and clean unnecessary files and packages
 RUN apt-get update && apt-get install -yq --no-install-recommends fail2ban curl locales ca-certificates python3-pip python3-setuptools \
    && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone \
    && dpkg-reconfigure --frontend=noninteractive tzdata \
@@ -19,10 +22,6 @@ RUN apt-get update && apt-get install -yq --no-install-recommends fail2ban curl 
    && apt-get purge -y python3-pip python3-setuptools && apt-get autoremove -y && apt-get clean -y \
    && rm -rf /var/lib/apt/lists/*
 
-# Locale
-ENV LANG pt_BR.UTF-8
-ENV LC_ALL pt_BR.UTF-8
-
 # Copy files
 COPY jail.local /etc/fail2ban/
 COPY filter.d/ /etc/fail2ban/filter.d/
@@ -32,13 +31,19 @@ COPY ddosblock.py /opt/ddosblock.py
 COPY service-account.json /opt/
 COPY init.sh .
 
-# Update PATH for Go
-ENV PATH="/usr/local/go/bin:${PATH}"
-# Variable for service account
+# Environment variables for Locale settings
+ENV LANG pt_BR.UTF-8
+ENV LC_ALL pt_BR.UTF-8
+
+# Environment variable for Google service account credentials
 ENV GOOGLE_APPLICATION_CREDENTIALS /opt/service-account.json
 
+# Make init.sh executable, 
+# create postgres log file and set owner to postgres user,
+# and make service account file with read permissions for everyone.
 RUN chmod u+x init.sh \
       && touch /var/log/postgresql/postgresql.log && chown -R postgres.postgres /var/log/postgresql/ \
       && chmod 755 /opt/service-account.json
 
+# Default command to init.sh Shell Script
 CMD ["./init.sh"]

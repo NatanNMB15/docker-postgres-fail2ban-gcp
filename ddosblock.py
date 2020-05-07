@@ -1,3 +1,6 @@
+# Program usage example
+# python3 ddosblock.py 127.0.0.1
+
 import os
 import sys
 import google.auth
@@ -13,12 +16,12 @@ import requests_toolbelt.adapters.appengine
 IAM_SCOPE = 'https://www.googleapis.com/auth/iam'
 OAUTH_TOKEN_URI = 'https://www.googleapis.com/oauth2/v4/token'
 
-def make_iap_request(url, client_id, blockIp, method='POST', **kwargs):
-    """Makes a request to an application protected by Identity-Aware Proxy.
+def make_function_request(url, client_id, blockIp, method='POST', **kwargs):
+    """Makes a request to a Cloud Function.
 
     Args:
-        url: The Identity-Aware Proxy-protected URL to fetch.
-        client_id: The client ID used by Identity-Aware Proxy.
+        url: Cloud Function protected URL to fetch.
+        client_id: The client ID from the Service Account used with file service-account.json
         method: The request method to use
                 ('GET', 'OPTIONS', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE')
         **kwargs: Any of the parameters defined for the request function:
@@ -38,7 +41,7 @@ def make_iap_request(url, client_id, blockIp, method='POST', **kwargs):
         scopes=[IAM_SCOPE])
     if isinstance(bootstrap_credentials,
                     google.oauth2.credentials.Credentials):
-        raise Exception('make_iap_request is only supported for service '
+        raise Exception('make_function_request is only supported for service '
                         'accounts.')
     elif isinstance(bootstrap_credentials,
                     google.auth.app_engine.Credentials):
@@ -55,15 +58,9 @@ def make_iap_request(url, client_id, blockIp, method='POST', **kwargs):
         # account key, we use the IAM signBlob API to sign instead.
         # In order for this to work:
         #
-        # 1. Your VM needs the https://www.googleapis.com/auth/iam scope.
-        #    You can specify this specific scope when creating a VM
-        #    through the API or gcloud. When using Cloud Console,
-        #    you'll need to specify the "full access to all Cloud APIs"
-        #    scope. A VM's scopes can only be specified at creation time.
-        #
-        # 2. The VM's default service account needs the "Service Account Actor"
-        #    role. This can be found under the "Project" category in Cloud
-        #    Console, or roles/iam.serviceAccountActor in gcloud.
+        # 1. The specified service account needs the "Cloud Function Invoker"
+        #    role or permission. This can be found under the "Project" category in Cloud
+        #    Console, or roles/cloudfunctions.invoker in gcloud.
         signer = google.auth.iam.Signer(
             Request(), bootstrap_credentials, signer_email)
     else:
@@ -83,17 +80,26 @@ def make_iap_request(url, client_id, blockIp, method='POST', **kwargs):
     google_open_id_connect_token = get_google_open_id_connect_token(
         service_account_credentials)
 
-    # Fetch the Identity-Aware Proxy-protected URL, including an
-    # Authorization header containing "Bearer " followed by a
-    # Google-issued OpenID Connect token for the service account.
-    dataJSON = { "ip": blockIp }
+    # JSON data to make POST request to Cloud Function
+    # "ip"          = IP for blocking,
+    # "type"        = type of Firewall to make block, App Engine or Compute Engine, 
+    # in this case we use Compute Engine Firewall,
+    # "action"      = ban action
+    dataJSON = { "ip": blockIp, "type": "compute", "action": "ban" }
+
+    # Make a request to specified URL for Cloud Function, including:
+    # method for request,
+    # URL for request,
+    # JSON data for request,
+    # Authorization header containing "Bearer " followed by a Google-issued OpenID Connect
+    # token for the service account.
     resp = requests.request(
         method, url, data=dataJSON,
         headers={'Authorization': 'Bearer {}'.format(
             google_open_id_connect_token)}, **kwargs)
     if resp.status_code == 403:
         raise Exception('Service account {} does not have permission to '
-                        'access the IAP-protected application.'.format(
+                        'access the Cloud Function.'.format(
                             signer_email))
     elif resp.status_code != 200:
         raise Exception(
@@ -135,10 +141,19 @@ def get_google_open_id_connect_token(service_account_credentials):
         request, OAUTH_TOKEN_URI, body)
     return token_response['id_token']
     
+# Main Function
 def main():
-    result = make_iap_request(str(os.getenv("HOST_FUNCTION_DDOS_BLOCK")), str(os.getenv("SERVICE_ACCOUNT_ID")), str(sys.argv[1]))
+    # Call function make_function_request, with environment variables set from system
+    #
+    # HOST_FUNCTION_DDOS_BLOCK  = the URL for Cloud Function
+    # SERVICE_ACCOUNT_ID        = the service account client ID to use in request
+    # sys.argv[1]               = IP to block, from program argument
+    #
+    result = make_function_request(str(os.getenv("HOST_FUNCTION_DDOS_BLOCK")), str(os.getenv("SERVICE_ACCOUNT_ID")), str(sys.argv[1]))
+    
+    # Print result from request
     print(result)
 
-
+# Declare Python Main function
 if __name__ == '__main__':
     main()
