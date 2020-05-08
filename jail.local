@@ -6,7 +6,8 @@
 ignoreip = 127.0.0.1/8
 
 # "bantime" is the number of seconds that a host is banned.
-bantime  = 24h
+# This time is only for Fail2Ban software, in Google Cloud Platform Firewall is banned permanently.
+bantime  = 5s
 
 # "maxretry" is the number of failures before a host get banned.
 maxretry = 5
