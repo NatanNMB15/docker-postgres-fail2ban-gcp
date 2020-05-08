@@ -5,6 +5,11 @@ ARG DEBIAN_FRONTEND=noninteractive
 
 # Timezone
 ENV TZ=America/Sao_Paulo
+# Environment variables for Locale settings
+ENV CHAR_ENCODING UTF-8
+ENV LANG pt_BR.$CHAR_ENCODING
+ENV LC_ALL pt_BR.$CHAR_ENCODING
+
 
 # Copy file with required libraries for Python
 COPY requirements.txt /opt/requirements.txt
@@ -14,7 +19,7 @@ COPY requirements.txt /opt/requirements.txt
 RUN apt-get update && apt-get install -yq --no-install-recommends fail2ban curl locales ca-certificates python3-pip python3-setuptools \
    && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone \
    && dpkg-reconfigure --frontend=noninteractive tzdata \
-   && sed -i -e 's/# pt_BR.UTF-8 UTF-8/pt_BR.UTF-8 UTF-8/' /etc/locale.gen \
+   && sed -i -e 's/# '"${LANG}"' '"${CHAR_ENCODING}"'/'"${LANG}"' '"${CHAR_ENCODING}"'/' /etc/locale.gen \
    && dpkg-reconfigure --frontend=noninteractive locales \
    && python3 -m pip install --upgrade pip && python3 -m pip install -r /opt/requirements.txt \
    # Change default environment variables of Fail2Ban service file to include Docker variables
@@ -32,10 +37,6 @@ COPY jail.d/ /etc/fail2ban/jail.d/
 COPY ddosblock.py /opt/ddosblock.py
 COPY service-account.json /opt/
 COPY init.sh .
-
-# Environment variables for Locale settings
-ENV LANG pt_BR.UTF-8
-ENV LC_ALL pt_BR.UTF-8
 
 # Environment variable for Google service account credentials
 ENV GOOGLE_APPLICATION_CREDENTIALS /opt/service-account.json

@@ -23,4 +23,15 @@ HOST_FUNCTION_DDOS_BLOCK    = full URL for Cloud Function to use.
 SERVICE_ACCOUNT_ID          = client ID from provided "service-account.json" file.
 ```
 
+You can set Timezone, Char Encoding and Locale Language variable in Dockerfile to your needs.
+
+```
+# Timezone
+ENV TZ=America/Sao_Paulo
+# Environment variables for Locale settings
+ENV CHAR_ENCODING UTF-8
+ENV LANG pt_BR.$CHAR_ENCODING
+ENV LC_ALL pt_BR.$CHAR_ENCODING
+```
+
 Credits to SuperITMan for Fail2Ban Jail and Filter configuration. Original source: https://github.com/SuperITMan/docker-fail2ban
