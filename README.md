@@ -34,4 +34,6 @@ ENV LANG pt_BR.$CHAR_ENCODING
 ENV LC_ALL pt_BR.$CHAR_ENCODING
 ```
 
+You can use this [Cloud Function](https://github.com/NatanNMB15/nodejs-ddosblock-function-gcp) to work with Fail2Ban, specifiying URL for Cloud Function.
+
 Credits to SuperITMan for Fail2Ban Jail and Filter configuration. Original source: https://github.com/SuperITMan/docker-fail2ban
