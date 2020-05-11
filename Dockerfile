@@ -36,7 +36,7 @@ COPY action.d/ /etc/fail2ban/action.d/
 COPY jail.d/ /etc/fail2ban/jail.d/
 COPY ddosblock.py /opt/ddosblock.py
 COPY service-account.json /opt/
-COPY init.sh .
+COPY docker-entrypoint-fail2ban.sh /usr/local/bin/
 
 # Environment variable for Google service account credentials
 ENV GOOGLE_APPLICATION_CREDENTIALS /opt/service-account.json
@@ -44,9 +44,13 @@ ENV GOOGLE_APPLICATION_CREDENTIALS /opt/service-account.json
 # Make init.sh executable, 
 # create postgres log file and set owner to postgres user,
 # and make service account file with read permissions for everyone.
-RUN chmod u+x init.sh \
-      && touch /var/log/postgresql/postgresql.log && chown -R postgres.postgres /var/log/postgresql/ \
+RUN touch /var/log/postgresql/postgresql.log && chown -R postgres.postgres /var/log/postgresql/ \
       && chmod 755 /opt/service-account.json
 
-# Default command to init.sh Shell Script
-CMD ["./init.sh"]
+# Default command to docker-entrypoint-fail2ban.sh Shell Script
+RUN chmod +x /usr/local/bin/docker-entrypoint-fail2ban.sh && \
+      ln -s usr/local/bin/docker-entrypoint-fail2ban.sh /
+ENTRYPOINT [ "docker-entrypoint-fail2ban.sh" ]
+
+# Default Command with postgres Logging enabled
+CMD [ "postgres", "-c", "logging_collector=on", "-c", "log_directory=/var/log/postgresql", "-c", "log_filename=postgresql.log", "-c", "log_statement=all", "-c", "log_line_prefix='%m [%p] IP=%h '" ]
