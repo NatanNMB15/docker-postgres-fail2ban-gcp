@@ -1,5 +1,7 @@
 # Docker postgres-fail2ban for Google Cloud Platform
 
+![Docker Image CI](https://github.com/NatanNMB15/docker-postgres-fail2ban-gcp/workflows/Docker%20Image%20CI/badge.svg)
+
 Docker Build Image for postgres and fail2ban to invoke Google Cloud Function for Firewall rules.
 
 To use this Build Image you will need the file "service-account.json" from Google Cloud Service Account with Cloud Functions Invoker permission.

@@ -1,0 +1,29 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  schedule:
+    - cron: "0 6 * * *"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build the Docker image
+        # Add dummy file for service-account.json and build image
+        run: |
+          touch service-account.json
+          docker build --compress . --file Dockerfile --tag postgres-fail2ban:latest
+      - name: Test the Docker image
+        run: |
+          docker run --name postgres-fail2ban -e POSTGRES_PASSWORD=test12345 -d postgres-fail2ban:latest
+          sleep 20s
+          docker logs postgres-fail2ban
+          docker stop -t 20 postgres-fail2ban
+          if [ "$(docker inspect postgres-fail2ban --format='{{.State.ExitCode}}')" != "0" ]; then echo "Docker container exited with status $(docker inspect postgres-fail2ban --format='{{.State.ExitCode}}')" && exit 1; fi
+          docker rm postgres-fail2ban

@@ -1,6 +1,5 @@
 .git
 .github
 .gitignore
-cloudbuild.yaml
 LICENSE
 README.md
